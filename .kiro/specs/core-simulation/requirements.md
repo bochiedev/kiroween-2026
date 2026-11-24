@@ -1,6 +1,6 @@
 # Core simulation: requirements
 
-Status: spec reviewed before implementation (see docs/decision-log.md, 2026-11-25 entries).
+Status: implemented; tasks 1 to 8 proven by `src/simulation/*.test.ts` (see `docs/kiro-usage.md`).
 
 ## Introduction
 A pure TypeScript engine that models one order flowing through API, Queue, Worker and Database. It has no dependency on React, the DOM or the camera. UI and camera input drive it only through commands. All displayed state derives from its events.
