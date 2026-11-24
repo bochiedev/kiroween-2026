@@ -18,6 +18,15 @@ class Draft {
 function setComponent(draft: Draft, id: ComponentId, up: boolean): void {
   if (draft.state.components[id] === up) return;
   draft.emit(up ? 'COMPONENT_UP' : 'COMPONENT_DOWN', { component: id });
+  if (id === 'database' && up) {
+    // Parked orders are retained, so recovery puts them back in the queue in acceptance order.
+    const parked = Object.entries(draft.state.orders)
+      .filter(([, order]) => order.status === 'parked')
+      .sort(([, a], [, b]) => a.createdSeq - b.createdSeq);
+    for (const [orderId] of parked) {
+      draft.emit('ORDER_REQUEUED', { orderId, detail: { reason: 'database_up', attempts: 0 } });
+    }
+  }
   if (id === 'worker' && !up) {
     // The worker lost its in-flight order. It goes back to the queue with its attempts intact.
     const flying = inFlightId(draft.state);
