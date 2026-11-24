@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Verify simulation on save",
+      "description": "Run targeted simulation tests when simulation source changes.",
+      "trigger": "PostFileSave",
+      "matcher": "src/simulation/.*\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "sh scripts/kiro-sim-check.sh"
+      }
+    }
+  ]
+}

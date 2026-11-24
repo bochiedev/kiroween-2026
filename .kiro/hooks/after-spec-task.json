@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check after Kiro spec task",
+      "description": "Run actual configured build/test checks after tasks; log status to agent output.",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "command",
+        "command": "sh scripts/kiro-post-task-check.sh"
+      }
+    }
+  ]
+}
