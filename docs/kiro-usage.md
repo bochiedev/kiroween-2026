@@ -18,6 +18,8 @@
 | 2026-11-25 | Web agent: digital-lab tasks 1-8 | Implement the camera-free lab | Wrote `src/router.ts`, `src/lab/*`, `e2e/*`, one commit per task, `npm run typecheck && npm run test:unit` before each commit | `git log`, `src/lab/*.test.ts`, `e2e/*.spec.ts` | 76 unit tests and 7 Playwright tests pass (see Phase B experiment) | YES |
 | 2026-11-25 | Custom agent `experience-qa` | Review lab after Phase B | Not run. No mechanism to invoke custom agents on this surface | none | Not executed | NO |
 | 2026-11-25 | Specs | Draft `camera-cards`, `portal-experience`, `judge-readiness` | Agent wrote requirements, design and tasks by hand. The Kiro Spec UI was not used | `.kiro/specs/camera-cards/`, `.kiro/specs/portal-experience/`, `.kiro/specs/judge-readiness/` | Drafted | YES (file edits only, hand-written) |
+| 2026-11-25 | Skill `portal-performance` | Guide portal build | The agent read `.kiro/skills/portal-performance/SKILL.md` and followed it by hand (inline SVG, transform/opacity only, static first frame, link to /lab, reduced motion). Not auto-activated, so NOT a verified skill activation | `.kiro/skills/portal-performance/SKILL.md` | Checklist followed manually | NO (activation not observed) |
+| 2026-11-25 | Web agent: portal-experience tasks 1-5 | Implement landing page | Wrote `src/landing/*`, `e2e/portal.spec.ts` | `git log`, `src/landing/motion.test.ts`, `e2e/portal.spec.ts` | 80 unit and 16 Playwright tests pass (see Phase C experiment) | YES |
 
 ## Verified experiments
 
@@ -50,3 +52,13 @@ After implementation, turn evidence into a concise summary covering features act
 - Not verified: the experience-qa agent did not run. Hooks did not fire automatically. The Playwright MCP was not tried in this phase.
 - Test-quality notes: the first lesson E2E run failed on two test bugs (asserting "to do" on the current step; ambiguous `timeline` test id). Both were fixes to the test, not to the app. One earlier responsive run failed because Tab was pressed before the lazy lab chunk rendered; fixed with an `openLab` helper that waits for the heading.
 - Known limitations: Physical mode (`?mode=physical`) shows a note and falls back to the Digital Lab. The `/` page is a plain placeholder until the portal-experience task. The diagram is `role="img"` with the text list as the accessible source of state.
+
+
+### Phase C experiment: portal-experience (2026-11-25, web agent, Node v22.23.4, Chromium headless via Playwright)
+
+- Commands: `npm run typecheck`, `npm run test:unit`, `npm run build`, `npm run test:e2e`. All exited 0.
+- `npm run test:unit`: 80 tests passed (76 earlier plus 4 in `src/landing/motion.test.ts`).
+- `npm run test:e2e`: 16 passed in 10.7 s (7 earlier plus 9 in `e2e/portal.spec.ts`): one h1 and one main, CTA href `/lab?mode=digital` and height at least 44 px, transition then navigation, double activation pushes history once, keyboard Tab and Enter, direct `/lab` has no portal, no Lab or FlowGraph chunk requested while on `/`, reduced motion (ring `animation-name` is `none`, no `portal-entering` class, immediate navigation), control without reduced motion (ring animates), 360x740 (no horizontal overflow, CTA inside viewport).
+- Transition timing: the E2E measures wall time from click until the URL changes. It asserts at least 1000 ms and at most 2500 ms, because the timer is `TRANSITION_MS = 1200` and the upper bound includes Playwright overhead. The CSS duration is 1200 ms. The test does not measure frame rate.
+- Bundle (`npm run build`): `index` JS 224.85 kB (70.73 kB gzip), `index` CSS 1.49 kB, `Lab` JS 15.20 kB, `FlowGraph` JS 248.18 kB. Landing added about 1.8 kB raw to the main chunk. The landing has no image, font or video request.
+- Not measured: Lighthouse, LCP, CLS, CPU or network throttling, real device. Not verified: `?` hover preload behavior (not tested), Safari and Firefox.

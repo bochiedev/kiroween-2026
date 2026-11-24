@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { Landing } from './landing/Landing';
 import { useRoute } from './router';
 
 // The lab is a separate chunk. It never imports camera code.
@@ -13,19 +14,5 @@ export function App() {
       </Suspense>
     );
   }
-  return (
-    <main>
-      <h1>PaperFault: Learn by Breaking</h1>
-      <p>Break a small order system on purpose and watch it recover.</p>
-      <a
-        href="/lab?mode=digital"
-        onClick={(e) => {
-          e.preventDefault();
-          navigate('/lab?mode=digital');
-        }}
-      >
-        Open the Digital Lab
-      </a>
-    </main>
-  );
+  return <Landing navigate={navigate} />;
 }
