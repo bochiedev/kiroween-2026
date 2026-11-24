@@ -1,5 +1,5 @@
 import './lab.css';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { ArchitectureView } from './ArchitectureView';
 import { ControlPanel } from './ControlPanel';
 import { announcement } from './announce';
@@ -10,6 +10,9 @@ import { ReplayControls } from './ReplayControls';
 import { replayPositions, stateAtPosition, statesMatch } from './replayView';
 import { Timeline } from './Timeline';
 import { useSimulation } from './useSimulation';
+
+// Camera code is a separate chunk, requested only in physical mode.
+const CameraPanel = lazy(() => import('../camera/CameraPanel'));
 
 export default function Lab({ mode }: { mode: 'digital' | 'physical' }) {
   const sim = useSimulation();
@@ -25,7 +28,11 @@ export default function Lab({ mode }: { mode: 'digital' | 'physical' }) {
       <main>
         <h1>PaperFault Lab</h1>
         <LiveRegion message={announcement(view, replaying)} />
-        {mode === 'physical' && <p className="note">Camera mode is not available yet. This is the Digital Lab.</p>}
+        {mode === 'physical' && (
+          <Suspense fallback={<p role="status">Loading camera panel…</p>}>
+            <CameraPanel onCommand={sim.dispatch} />
+          </Suspense>
+        )}
         <p>Tick {view.tick}.</p>
         <div className="grid">
           <LessonPanel state={sim.state} />

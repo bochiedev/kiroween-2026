@@ -51,3 +51,5 @@ ul, ol { padding-left: 1.25rem; margin: .25rem 0; }
   .status-list { grid-template-columns: 1fr; }
 }
 select { max-width: 100%; }
+.camera-video { width: 100%; max-height: 16rem; border-radius: .375rem; background: #000; }
+.camera-panel { margin-bottom: 1rem; }
