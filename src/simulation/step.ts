@@ -18,6 +18,14 @@ class Draft {
 function setComponent(draft: Draft, id: ComponentId, up: boolean): void {
   if (draft.state.components[id] === up) return;
   draft.emit(up ? 'COMPONENT_UP' : 'COMPONENT_DOWN', { component: id });
+  if (id === 'worker' && !up) {
+    // The worker lost its in-flight order. It goes back to the queue with its attempts intact.
+    const flying = inFlightId(draft.state);
+    if (flying !== undefined) {
+      const attempts = getOrder(draft.state, flying)?.attempts ?? 0;
+      draft.emit('ORDER_REQUEUED', { orderId: flying, detail: { reason: 'worker_down', attempts } });
+    }
+  }
 }
 
 function submitOrder(draft: Draft, orderId: string): void {
@@ -47,7 +55,7 @@ function nextEligibleId(state: SimState): string | undefined {
   });
 }
 
-function persistInFlight(draft: Draft, orderId: string): void {
+function persistInFlight(draft: Draft, orderId: string, config: SimConfig): void {
   const { state } = draft;
   if (hasOrder(state, orderId) && Object.hasOwn(state.persisted, orderId)) {
     draft.emit('DUPLICATE_SUPPRESSED', { orderId, detail: { reason: 'already_persisted', ack: true } });
@@ -56,16 +64,27 @@ function persistInFlight(draft: Draft, orderId: string): void {
   if (state.components.database) {
     draft.emit('ORDER_PERSISTED', { orderId });
     draft.emit('ORDER_COMPLETED', { orderId });
+    return;
+  }
+  const attempts = (getOrder(state, orderId)?.attempts ?? 0) + 1;
+  draft.emit('PERSIST_FAILED', { orderId, component: 'database', detail: { attempts } });
+  if (attempts >= config.maxAttempts) {
+    draft.emit('ORDER_PARKED', { orderId, detail: { attempts } });
+  } else {
+    draft.emit('ORDER_RETRY_SCHEDULED', {
+      orderId,
+      detail: { nextAttemptTick: draft.state.tick + config.backoffTicks, attempts },
+    });
   }
 }
 
-function tick(draft: Draft): void {
+function tick(draft: Draft, config: SimConfig): void {
   draft.emit('TICK_ADVANCED', { tick: draft.state.tick + 1 });
   const { components } = draft.state;
   if (!components.worker || !components.queue) return;
   const flying = inFlightId(draft.state);
   if (flying !== undefined) {
-    persistInFlight(draft, flying);
+    persistInFlight(draft, flying, config);
     return;
   }
   const next = nextEligibleId(draft.state);
@@ -84,7 +103,7 @@ export function step(state: SimState, command: Command, config: SimConfig): SimS
       submitOrder(draft, command.orderId);
       break;
     case 'TICK':
-      tick(draft);
+      tick(draft, config);
       break;
   }
   return draft.state;
