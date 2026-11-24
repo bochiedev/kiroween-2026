@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PaperFault marker cards</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 1.5rem; color: #111; }
+.cards { display: grid; grid-template-columns: repeat(2, 120mm); gap: 8mm; }
+figure { margin: 0; break-inside: avoid; }
+img { width: 120mm; height: 150mm; display: block; }
+figcaption { position: absolute; width: 1px; height: 1px; overflow: hidden; }
+@media print { .instructions { display: none; } }
+</style>
+</head>
+<body>
+<h1>PaperFault marker cards</h1>
+<div class="instructions">
+<h2>Print instructions</h2>
+<ol>
+<li>Print this page at 100% scale (no &quot;fit to page&quot;), on white paper, in black ink.</li>
+<li>Cut out each card. Keep the white border around the black square.</li>
+<li>Use matte paper. Glossy paper causes glare that hides the marker.</li>
+<li>Hold each card flat and well lit, facing the camera, about 20 to 40 cm away.</li>
+<li>Removing a card from the camera view takes that component down. Bringing it back restores it.</li>
+<li>Physical mode is implemented but not hardware-verified.</li>
+</ol>
+<p><a href="/lab?mode=physical">Open physical mode</a> or <a href="/lab?mode=digital">use the Digital Lab (no camera)</a>.</p>
+</div>
+<div class="cards">
+<figure><img src="api.svg" alt="API marker card, ArUco id 0" /><figcaption>API</figcaption></figure>
+<figure><img src="queue.svg" alt="Queue marker card, ArUco id 1" /><figcaption>Queue</figcaption></figure>
+<figure><img src="worker.svg" alt="Worker marker card, ArUco id 2" /><figcaption>Worker</figcaption></figure>
+<figure><img src="database.svg" alt="Database marker card, ArUco id 3" /><figcaption>Database</figcaption></figure>
+</div>
+</body>
+</html>

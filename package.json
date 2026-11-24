@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
+    "cards": "node scripts/generate-cards.mjs",
     "test:sim": "vitest run src/simulation"
   },
   "dependencies": {
