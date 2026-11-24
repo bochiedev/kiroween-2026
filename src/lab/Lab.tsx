@@ -1,4 +1,5 @@
 import './lab.css';
+import { LessonPanel } from './LessonPanel';
 import { ControlPanel } from './ControlPanel';
 import { ArchitectureView } from './ArchitectureView';
 import { useSimulation } from './useSimulation';
@@ -14,6 +15,7 @@ export default function Lab({ mode }: { mode: 'digital' | 'physical' }) {
         )}
         <p>Tick {sim.state.tick}.</p>
         <div className="grid">
+          <LessonPanel state={sim.state} />
           <ControlPanel sim={sim} disabled={false} />
           <ArchitectureView state={sim.state} />
         </div>
