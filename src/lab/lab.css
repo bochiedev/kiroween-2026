@@ -28,3 +28,14 @@ ul, ol { padding-left: 1.25rem; margin: .25rem 0; }
 .status-list li { border: 2px solid var(--cyan); border-radius: .375rem; padding: .375rem .5rem; }
 .status-list li.down { border-color: var(--orange); border-style: dashed; font-weight: 700; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.flow { height: 11rem; border: 1px solid var(--violet); border-radius: .375rem; margin-bottom: .75rem; }
+.flow .react-flow__node { background: var(--bg); color: var(--text); border: 2px solid var(--cyan); font-size: .8rem; text-align: center; }
+.flow .react-flow__node.node-down { border-color: var(--orange); border-style: dashed; font-weight: 700; }
+.flow .react-flow__edge-path { stroke: var(--violet); stroke-width: 2; }
+.flow .react-flow__edge.edge-moving .react-flow__edge-path { stroke: var(--cyan); stroke-width: 3; }
+.flow .react-flow__attribution { background: var(--panel); }
+.flow .react-flow__attribution a { color: var(--cyan); }
+@media (prefers-reduced-motion: reduce) {
+  .flow .react-flow__edge.animated path { animation: none !important; stroke-dasharray: none; }
+  * { scroll-behavior: auto !important; transition: none !important; }
+}

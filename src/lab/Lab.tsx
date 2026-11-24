@@ -1,6 +1,6 @@
 import './lab.css';
 import { ControlPanel } from './ControlPanel';
-import { StatusList } from './StatusList';
+import { ArchitectureView } from './ArchitectureView';
 import { useSimulation } from './useSimulation';
 
 export default function Lab({ mode }: { mode: 'digital' | 'physical' }) {
@@ -15,10 +15,7 @@ export default function Lab({ mode }: { mode: 'digital' | 'physical' }) {
         <p>Tick {sim.state.tick}.</p>
         <div className="grid">
           <ControlPanel sim={sim} disabled={false} />
-          <section aria-labelledby="arch-h" className="panel">
-            <h2 id="arch-h">System</h2>
-            <StatusList state={sim.state} />
-          </section>
+          <ArchitectureView state={sim.state} />
         </div>
       </main>
     </div>
