@@ -6,7 +6,18 @@ PaperFault teaches why a simple distributed system fails and how it recovers. Yo
 
 ## Status
 
-Early stage. The repository currently holds Kiro configuration, planning documents and helper scripts. The application has not been built yet, so there is nothing to run. This README will be updated as each part lands.
+| Area | State |
+|---|---|
+| Simulation (pure TypeScript, six fast-check properties) | Verified: 50 simulation tests pass |
+| Digital Lab (`/lab?mode=digital`), keyboard-only full lesson | Verified in Chromium by Playwright |
+| Landing portal, reduced motion, 360 px | Verified in Chromium by Playwright |
+| Accessibility (axe, WCAG 2.1 A/AA) on `/` and `/lab?mode=digital` | 0 violations, Chromium only |
+| Lighthouse (local, simulated throttling) | `/` 100/100/100/100, `/lab?mode=digital` 99/100/100/100 (performance, accessibility, best practices, SEO). Method in `docs/final-report.md` |
+| Physical mode (camera and printed cards) | **Implemented, not hardware-verified.** Only a synthetic canvas camera was tested |
+| Static-host config (`vercel.json`) | Written, never deployed or run on Vercel |
+| Deployment URL, demo video, Devpost text | Not done (human tasks) |
+
+Full evidence: [`docs/final-report.md`](docs/final-report.md) and [`docs/kiro-usage.md`](docs/kiro-usage.md).
 
 ## The lesson
 
@@ -21,16 +32,16 @@ Early stage. The repository currently holds Kiro configuration, planning documen
 - **Digital Lab** (`/lab?mode=digital`): fully functional with no camera. This is the primary mode.
 - **Physical mode** (`/lab?mode=physical`): **implemented, not hardware-verified.** Four printed ArUco marker cards (API, Queue, Worker, Database) detected through the browser camera with `js-aruco2`. Print them from [`/cards/index.html`](public/cards/index.html) (regenerate with `npm run cards`). The camera and detection code are lazy-loaded, permission is requested only when you click **Start camera**, frames are never stored or uploaded, and denied, no-camera and unsupported browsers fall back to the Digital Lab. Tested only with a synthetic canvas camera in Chromium, never with a real camera, phone or printed card.
 
-## Planned stack
+## Stack
 
-Vite, React, TypeScript, XYFlow (React Flow), a browser ArUco library (choice still to be verified), Vitest, fast-check and Playwright. The simulator is pure TypeScript with an injected clock and event stream, so UI state always reflects real simulator state.
+Vite, React, TypeScript, XYFlow (React Flow), `js-aruco2` (lazy-loaded, physical mode only), Vitest, fast-check and Playwright with `@axe-core/playwright`. The simulator is pure TypeScript with an injected clock and event stream, so UI state always reflects real simulator state.
 
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
 | `.kiro/steering/` | Product, architecture, experience and quality rules for Kiro |
-| `.kiro/specs/` | Per-feature requirements, design and tasks (to be generated with Kiro) |
+| `.kiro/specs/` | Per-feature requirements, design and tasks (hand-written, not from the Spec UI) |
 | `.kiro/skills/` | On-demand skills: simulation invariants, portal performance, demo QA |
 | `.kiro/agents/` | Custom agents: `simulation-reviewer`, `experience-qa` |
 | `.kiro/hooks/` | Quality-gate hooks run after spec tasks and simulation saves |
@@ -42,20 +53,24 @@ Vite, React, TypeScript, XYFlow (React Flow), a browser ArUco library (choice st
 
 ## How to run
 
-The commands below apply once the app scaffold exists. They are the intended workflow, not yet verified.
-
-Requirements: Node.js 20+ and npm.
+Requirements: Node.js 20+ and npm. Verified on Node v22.23.4.
 
 ```bash
 npm install
 npm run dev          # local dev server
 npm run typecheck    # TypeScript check
-npm run test:unit    # unit tests
-npm run test:sim     # simulation and property-based tests
-npm run build        # production build
+npm run test:unit    # all unit and property tests (Vitest)
+npm run test:sim     # simulation and property-based tests only
+npm run build        # typecheck and production build to dist/
+npm run test:e2e     # builds, serves the build and runs Playwright (Chromium)
+npm run cards        # regenerate printable marker cards in public/cards/
 ```
 
-Open the dev server URL, then choose **Enter the Lab**, or go directly to `/lab?mode=digital`.
+`npm run test:e2e` needs a Chromium for Playwright. If it is missing, run `npx playwright install chromium` once.
+
+Judge path (no camera needed): open `/`, choose **ENTER THE LAB**, or go straight to `/lab?mode=digital`. The click-by-click script is in [`docs/demo-plan.md`](docs/demo-plan.md).
+
+Deployment: `vercel.json` holds a static build and an SPA rewrite so `/lab` works on direct load. It contains no secrets. Deploying is a human task, and the config has not been run on Vercel. Camera access needs `https` (or localhost).
 
 ## Working with Kiro
 

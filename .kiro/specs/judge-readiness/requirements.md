@@ -1,6 +1,6 @@
 # Judge readiness: requirements
 
-Status: drafted, not implemented. Depends on all other specs.
+Status: implemented. Evidence in `docs/final-report.md`. Deployment, Vercel check, video and Devpost are human tasks.
 
 ## Introduction
 A judge can open the project, run it in under five minutes, see the demo path, and check claims against real evidence.

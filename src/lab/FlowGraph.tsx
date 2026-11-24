@@ -34,7 +34,7 @@ export default function FlowGraph({ state }: { state: SimState }) {
     className: e.moving ? 'edge-moving' : undefined,
   }));
   return (
-    <div className="flow" role="img" aria-label="Diagram: API to Queue to Worker to Database. The text list below has the same state.">
+    <div className="flow" role="group" aria-label="Diagram: API to Queue to Worker to Database. The text list below has the same state.">
       <ReactFlow
         nodes={nodes}
         edges={edges}
