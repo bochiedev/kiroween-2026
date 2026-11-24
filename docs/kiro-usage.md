@@ -17,6 +17,7 @@
 | 2026-11-25 | Hooks scripts | Run configured checks | Ran `sh scripts/kiro-post-task-check.sh` and `sh scripts/kiro-sim-check.sh` by hand. Both exited 0 and ran typecheck and tests. The Kiro hook triggers (PostTaskExec, PostFileSave) did not fire automatically on this surface | output below | Scripts work; hook triggering unverified | Scripts YES, triggers NO |
 | 2026-11-25 | Web agent: digital-lab tasks 1-8 | Implement the camera-free lab | Wrote `src/router.ts`, `src/lab/*`, `e2e/*`, one commit per task, `npm run typecheck && npm run test:unit` before each commit | `git log`, `src/lab/*.test.ts`, `e2e/*.spec.ts` | 76 unit tests and 7 Playwright tests pass (see Phase B experiment) | YES |
 | 2026-11-25 | Custom agent `experience-qa` | Review lab after Phase B | Not run. No mechanism to invoke custom agents on this surface | none | Not executed | NO |
+| 2026-11-25 | Specs | Draft `camera-cards`, `portal-experience`, `judge-readiness` | Agent wrote requirements, design and tasks by hand. The Kiro Spec UI was not used | `.kiro/specs/camera-cards/`, `.kiro/specs/portal-experience/`, `.kiro/specs/judge-readiness/` | Drafted | YES (file edits only, hand-written) |
 
 ## Verified experiments
 
