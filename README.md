@@ -19,7 +19,7 @@ Early stage. The repository currently holds Kiro configuration, planning documen
 ## Modes
 
 - **Digital Lab** (`/lab?mode=digital`): fully functional with no camera. This is the primary mode.
-- **Physical mode**: four printed ArUco marker cards (API, Queue, Worker, Database) detected through the browser camera. The camera code is lazy-loaded and permission is requested only when you start it.
+- **Physical mode** (`/lab?mode=physical`): **implemented, not hardware-verified.** Four printed ArUco marker cards (API, Queue, Worker, Database) detected through the browser camera with `js-aruco2`. Print them from [`/cards/index.html`](public/cards/index.html) (regenerate with `npm run cards`). The camera and detection code are lazy-loaded, permission is requested only when you click **Start camera**, frames are never stored or uploaded, and denied, no-camera and unsupported browsers fall back to the Digital Lab. Tested only with a synthetic canvas camera in Chromium, never with a real camera, phone or printed card.
 
 ## Planned stack
 

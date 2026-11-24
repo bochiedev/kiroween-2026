@@ -62,3 +62,17 @@ After implementation, turn evidence into a concise summary covering features act
 - Transition timing: the E2E measures wall time from click until the URL changes. It asserts at least 1000 ms and at most 2500 ms, because the timer is `TRANSITION_MS = 1200` and the upper bound includes Playwright overhead. The CSS duration is 1200 ms. The test does not measure frame rate.
 - Bundle (`npm run build`): `index` JS 224.85 kB (70.73 kB gzip), `index` CSS 1.49 kB, `Lab` JS 15.20 kB, `FlowGraph` JS 248.18 kB. Landing added about 1.8 kB raw to the main chunk. The landing has no image, font or video request.
 - Not measured: Lighthouse, LCP, CLS, CPU or network throttling, real device. Not verified: `?` hover preload behavior (not tested), Safari and Firefox.
+
+
+### Phase D experiment: camera-cards (2026-11-25, web agent, Node v22.23.4, Chromium headless via Playwright)
+
+- Commands: `npm run typecheck`, `npm run test:unit`, `npm run build`, `npm run test:e2e`. All exited 0.
+- Library check (`npm view js-aruco2`, GitHub API): version 2.0.0, MIT, 424 KB unpacked, no dependencies. Details and trade-offs in `docs/decision-log.md`.
+- `npm run test:unit`: 19 test files, 108 tests passed (80 earlier plus 28 in `src/camera`: presence 9, mapping 5, adapter failures 7, cards and a real `js-aruco2` round trip 3, import boundary 4). The round trip rasterises each generated marker to RGBA pixels in Node and checks that the library returns the expected id. It is a synthetic image, not a camera frame.
+- Import boundary test: sensitivity checked once by temporarily adding a runtime `COMPONENT_IDS` import to `src/camera/mapping.ts`, which made the test fail. The change was reverted.
+- `npm run test:e2e`: 23 passed in about 11 s (16 earlier plus 7 in `e2e/camera.spec.ts`): `/` and `/lab?mode=digital` make zero `getUserMedia` calls and request no CameraPanel, adapter or aruco chunk; `/lab?mode=physical` makes zero calls and loads no adapter or aruco chunk until the Start camera click; denied, no device and unsupported each show a distinct message and the Continue in the Digital Lab link works while the lab stays usable; the four card files are served at `/cards/` as `image/svg`; a synthetic camera (a canvas `captureStream` that redraws the four generated markers) goes through the real bundled `js-aruco2` and debouncer: all four components stay UP, removing the worker card makes Worker DOWN, redrawing it makes Worker UP, and Stop camera returns to idle.
+- A real bug was found by that last test: in the production bundle `js-aruco2` exported nothing because its top-level `this` becomes `undefined`. Fixed with the `js-aruco2-exports` plugin (decision log).
+- Bundle (`npm run build`): `aruco` chunk 25.61 kB (10.36 kB gzip), `adapter` 2.32 kB, `CameraPanel` 2.97 kB, `Lab` 15.46 kB (unchanged by the camera except a lazy import), `index` 224.21 kB. None of the camera chunks load outside physical mode (E2E above).
+- Defaults: `presentFrames` 3, `absentFrames` 5 (design). Not tuned against a real camera.
+- Not verified: any real camera, printed card, glare, lighting, distance, phone or tablet, Safari, Firefox, `npm run dev` (Vite dev server) with `js-aruco2`, real permission prompt UI, the `https` requirement on a deployed URL, detection accuracy and frame rate (not measured). Physical mode is labelled "implemented, not hardware-verified" in the UI, README and compliance checklist.
+- Behaviour to know: a card that is never seen emits no signal, so its component stays as the lab has it (UP by default). A hung `video.play()` has no timeout.

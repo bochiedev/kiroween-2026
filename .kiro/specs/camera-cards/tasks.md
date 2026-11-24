@@ -6,4 +6,4 @@
 - [x] 4. Implement `adapter.ts` and lazy `CameraPanel` with click-only permission and the three fallbacks (R1, R2, R3)
 - [x] 5. Generate printable marker cards and print instructions at a stable path (R6)
 - [x] 6. Tests: import boundary, no `getUserMedia` call without a click, fallback messages with a stubbed `getUserMedia` (R1, R2, R3)
-- [ ] 7. Update README and `docs/compliance-checklist.md`: implemented, not hardware-verified (R7)
+- [x] 7. Update README and `docs/compliance-checklist.md`: implemented, not hardware-verified (R7)
