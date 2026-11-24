@@ -6,5 +6,5 @@
 - [x] 4. Implement persist failure, bounded retry, parking, with unit tests (R4)
 - [x] 5. Implement recovery and duplicate suppression, with unit tests (R5)
 - [x] 6. Implement `replay`, `replayEvents` and selectors (R6, R7)
-- [ ] 7. Write fast-check properties 1 to 6 in `src/simulation/properties.test.ts`
+- [x] 7. Write fast-check properties 1 to 6 in `src/simulation/properties.test.ts`
 - [ ] 8. Run `npm run test:sim` and `npm run typecheck`; record real output in `docs/kiro-usage.md`
