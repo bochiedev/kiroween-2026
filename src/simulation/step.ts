@@ -1,4 +1,4 @@
-import { applyEvent } from './apply';
+import { applyEvent, getOrder, hasOrder } from './apply';
 import { validateConfig } from './state';
 import type { Command, ComponentId, EventDetail, SimConfig, SimEvent, SimState } from './types';
 
@@ -20,6 +20,58 @@ function setComponent(draft: Draft, id: ComponentId, up: boolean): void {
   draft.emit(up ? 'COMPONENT_UP' : 'COMPONENT_DOWN', { component: id });
 }
 
+function submitOrder(draft: Draft, orderId: string): void {
+  const { state } = draft;
+  const existing = getOrder(state, orderId);
+  if (existing && existing.status !== 'rejected') {
+    draft.emit('DUPLICATE_SUPPRESSED', { orderId, detail: { reason: 'already_accepted' } });
+    return;
+  }
+  if (!state.components.api) {
+    draft.emit('ORDER_REJECTED', { orderId, detail: { reason: 'api_down' } });
+  } else if (!state.components.queue) {
+    draft.emit('ORDER_REJECTED', { orderId, detail: { reason: 'queue_down' } });
+  } else {
+    draft.emit('ORDER_ACCEPTED', { orderId });
+  }
+}
+
+function inFlightId(state: SimState): string | undefined {
+  return state.queue.find((id) => getOrder(state, id)?.status === 'in_flight');
+}
+
+function nextEligibleId(state: SimState): string | undefined {
+  return state.queue.find((id) => {
+    const order = getOrder(state, id);
+    return order?.status === 'queued' && order.nextAttemptTick <= state.tick;
+  });
+}
+
+function persistInFlight(draft: Draft, orderId: string): void {
+  const { state } = draft;
+  if (hasOrder(state, orderId) && Object.hasOwn(state.persisted, orderId)) {
+    draft.emit('DUPLICATE_SUPPRESSED', { orderId, detail: { reason: 'already_persisted', ack: true } });
+    return;
+  }
+  if (state.components.database) {
+    draft.emit('ORDER_PERSISTED', { orderId });
+    draft.emit('ORDER_COMPLETED', { orderId });
+  }
+}
+
+function tick(draft: Draft): void {
+  draft.emit('TICK_ADVANCED', { tick: draft.state.tick + 1 });
+  const { components } = draft.state;
+  if (!components.worker || !components.queue) return;
+  const flying = inFlightId(draft.state);
+  if (flying !== undefined) {
+    persistInFlight(draft, flying);
+    return;
+  }
+  const next = nextEligibleId(draft.state);
+  if (next !== undefined) draft.emit('ORDER_DELIVERED', { orderId: next });
+}
+
 /** Pure. Returns a new state with the events for this command appended. */
 export function step(state: SimState, command: Command, config: SimConfig): SimState {
   validateConfig(config);
@@ -29,7 +81,10 @@ export function step(state: SimState, command: Command, config: SimConfig): SimS
       setComponent(draft, command.id, command.up);
       break;
     case 'SUBMIT_ORDER':
+      submitOrder(draft, command.orderId);
+      break;
     case 'TICK':
+      tick(draft);
       break;
   }
   return draft.state;
