@@ -221,3 +221,12 @@ Result: **server starts and answers; Kiro client connection not verified.**
 | `/lab?mode=digital` | 100 | 100 | 100 | 100 | 1.3 s | 0 | 0 ms |
 
 - Closes the open item that the CSP and Permissions-Policy headers had not been tried on a deployment, for Chromium only. Camera permission under the CSP was not exercised on a real camera. Firefox and Safari not tested.
+
+## Local IDE session checks (2026-11-24)
+
+| Surface | What was tried | Observed | Verified? |
+|---|---|---|---|
+| Hook `PostFileSave` (`simulation-save`) | Appended a comment line to `src/simulation/index.ts` with the agent's file tool, then reverted with `git checkout` | No hook output came back to the agent. The hook did not visibly fire from an agent-made edit. A save from the editor by a user was not tried | NO |
+| Hook scripts by hand | `sh scripts/kiro-post-task-check.sh` and `sh scripts/kiro-sim-check.sh` | Typecheck, 109 unit tests and 51 sim tests passed, exit 0 | Scripts YES, triggers NO |
+| Custom agents `simulation-reviewer`, `experience-qa` | Looked for them in the sub-agent list of this session | They are not available as invocable agents here. Not run | NO |
+| Manual review of `src/simulation/step.ts`, `apply.ts`, `types.ts` | Read the code against the `simulation-invariants` checklist. This was a human-style read by the main agent, not the `simulation-reviewer` agent | No defect found in the five invariants. Persist is guarded by the `persisted` set, retries are bounded by `maxAttempts`, parked orders are retained and requeued on DB recovery, and `applyEvent` is the only state mutation, so replay equals live state by construction. Untested edge noted: the queue going down while an order is in flight leaves it in flight until the queue returns (reads as intended, no test asserts it) | NO (not an agent run) |
