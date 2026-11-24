@@ -15,6 +15,8 @@
 | 2026-11-25 | Skill `simulation-invariants` | Guide engine and tests | The agent read `.kiro/skills/simulation-invariants/SKILL.md` and applied its checklist by hand. The web surface did not auto-activate the skill, so this is NOT a verified skill activation | `.kiro/skills/simulation-invariants/SKILL.md` | Checklist followed manually | NO (activation not observed) |
 | 2026-11-25 | Custom agent `simulation-reviewer` | Independent review after Phase A | Not run. No mechanism to invoke it on this surface | none | Not executed | NO |
 | 2026-11-25 | Hooks scripts | Run configured checks | Ran `sh scripts/kiro-post-task-check.sh` and `sh scripts/kiro-sim-check.sh` by hand. Both exited 0 and ran typecheck and tests. The Kiro hook triggers (PostTaskExec, PostFileSave) did not fire automatically on this surface | output below | Scripts work; hook triggering unverified | Scripts YES, triggers NO |
+| 2026-11-25 | Web agent: digital-lab tasks 1-8 | Implement the camera-free lab | Wrote `src/router.ts`, `src/lab/*`, `e2e/*`, one commit per task, `npm run typecheck && npm run test:unit` before each commit | `git log`, `src/lab/*.test.ts`, `e2e/*.spec.ts` | 76 unit tests and 7 Playwright tests pass (see Phase B experiment) | YES |
+| 2026-11-25 | Custom agent `experience-qa` | Review lab after Phase B | Not run. No mechanism to invoke custom agents on this surface | none | Not executed | NO |
 
 ## Verified experiments
 
@@ -34,3 +36,16 @@ After implementation, turn evidence into a concise summary covering features act
 - Sensitivity check (manual, deliberate, reverted, not committed): changing `attempts >= maxAttempts` to `>` made P5 fail with seed -1239051130, shrunk counterexample `maxAttempts 1, backoffTicks 0, [database down, submit a, 4x TICK]`. Disabling the parked-order requeue on database up made P6 fail with seed 701178456, shrunk counterexample `maxAttempts 1, backoffTicks 0, [database down, submit a, 2x TICK]`. These are injected faults, not product bugs. They show the properties can fail.
 - Kernel purity: `grep -rnE "Date\.now|Math\.random|setTimeout|setInterval|from 'react|document\.|window\." src/simulation` (non-test files) returned no matches.
 - Hook script output (abridged to the pass lines): `RUN: npm run typecheck`, `RUN: npm run test:unit` (50 passed), `RUN: npm run test:sim` (50 passed).
+
+
+### Phase B experiment: Digital Lab (2026-11-25, web agent, Node v22.23.4, Chromium headless shell 159.0.8154.6 via Playwright)
+
+- Commands: `npm run typecheck`, `npm run test:unit`, `npm run build`, `npm run test:e2e`. All exited 0.
+- `npm run test:unit`: 13 test files, 76 tests passed (50 simulation plus router 5, useSimulation 1, flowModel 5, lesson 8, replayView 4, announce 3).
+- `npm run test:e2e` (builds, serves `vite preview` on 127.0.0.1:4173, runs Chromium): 7 tests passed in about 7 s. `e2e/lesson.spec.ts` runs the full lesson using only Tab, Enter and Space (a `tabTo` helper presses Tab until the focused element has the wanted name): healthy order, Database down, queued retry (PERSIST_FAILED and retry scheduled in the timeline), restore, drain the queue, duplicate resubmit ignored, order-2 saved exactly once, replay step by step to a state equal to live. `e2e/controls.spec.ts`: keyboard operation and non-`none` focus outline. `e2e/responsive.spec.ts`: no horizontal overflow at 360x740, polite live region text, `▲ Database: DOWN` text marker, animated edge has `animation-name: none` under `reducedMotion: reduce`, and a control test showing it is not `none` without reduced motion.
+- Direct load: the lesson test records all requests on `/lab?mode=digital` and asserts none match camera, aruco or getUserMedia. There is no camera code in the repo yet, so this is a weak check until Phase D.
+- Bundle: `npm run build` output shows `index` 223.01 kB (70.09 kB gzip), `Lab` 15.17 kB (4.98 kB gzip), `FlowGraph` JS 248.18 kB (85.41 kB gzip). `@xyflow/react` 13.0.3 (MIT) is imported only in `src/lab/FlowGraph.tsx`, loaded with `React.lazy`, and ends up in its own chunk. The `react-flow` string count in the main `index` chunk is 0.
+- Not measured: Lighthouse, axe, performance. The 360 px check is horizontal overflow and one button's bounding box only. No screenshots were taken.
+- Not verified: the experience-qa agent did not run. Hooks did not fire automatically. The Playwright MCP was not tried in this phase.
+- Test-quality notes: the first lesson E2E run failed on two test bugs (asserting "to do" on the current step; ambiguous `timeline` test id). Both were fixes to the test, not to the app. One earlier responsive run failed because Tab was pressed before the lazy lab chunk rendered; fixed with an `openLab` helper that waits for the heading.
+- Known limitations: Physical mode (`?mode=physical`) shows a note and falls back to the Digital Lab. The `/` page is a plain placeholder until the portal-experience task. The diagram is `role="img"` with the text list as the accessible source of state.
