@@ -207,3 +207,17 @@ Result: **server starts and answers; Kiro client connection not verified.**
 - Record the under-3-minute video following `docs/demo-plan.md`, showing only what ran.
 - Write the Devpost answers, using `docs/kiro-usage.md` rows marked YES only.
 - Confirm the repository is public with `.kiro/` visible, and review `docs/compliance-checklist.md` before the December 4, 2026 2:00 PM PT deadline.
+
+## Live deployment verification (2026-11-24, local Kiro IDE session)
+
+- Deployed with `vercel deploy --prod --yes` (Vercel CLI 65.9.0). Live URL: https://kiroween-2026-blush.vercel.app
+- `curl`: `/`, `/lab?mode=digital` and `/cards/` return 200. The response carries the `Content-Security-Policy` and `Permissions-Policy: camera=(self)` headers from `vercel.json`.
+- Playwright suite run against the live URL (chromium, temporary config pointing `baseURL` at the deployment): 27 of 27 passed. axe: 0 violations on `/`, `/lab?mode=digital` and the DB-down state.
+- Lighthouse 13.6.0, same method as the earlier report (headless shell, `--no-sandbox`, mobile emulation, default simulated throttling), run from a developer machine against the live URL:
+
+| Page | Performance | Accessibility | Best practices | SEO | LCP | CLS | TBT |
+|---|---|---|---|---|---|---|---|
+| `/` | 100 | 100 | 100 | 100 | 0.9 s | 0 | 10 ms |
+| `/lab?mode=digital` | 100 | 100 | 100 | 100 | 1.3 s | 0 | 0 ms |
+
+- Closes the open item that the CSP and Permissions-Policy headers had not been tried on a deployment, for Chromium only. Camera permission under the CSP was not exercised on a real camera. Firefox and Safari not tested.
