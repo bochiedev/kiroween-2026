@@ -2,6 +2,8 @@ import './lab.css';
 import { useState } from 'react';
 import { ArchitectureView } from './ArchitectureView';
 import { ControlPanel } from './ControlPanel';
+import { announcement } from './announce';
+import { LiveRegion } from './LiveRegion';
 import { LessonPanel } from './LessonPanel';
 import { OrderInspector } from './OrderInspector';
 import { ReplayControls } from './ReplayControls';
@@ -22,6 +24,7 @@ export default function Lab({ mode }: { mode: 'digital' | 'physical' }) {
     <div className="lab">
       <main>
         <h1>PaperFault Lab</h1>
+        <LiveRegion message={announcement(view, replaying)} />
         {mode === 'physical' && <p className="note">Camera mode is not available yet. This is the Digital Lab.</p>}
         <p>Tick {view.tick}.</p>
         <div className="grid">

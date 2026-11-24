@@ -19,3 +19,9 @@ export async function press(page: Page, name: string, key: 'Enter' | 'Space' = '
   await tabTo(page, name);
   await page.keyboard.press(key);
 }
+
+/** Opens the digital lab directly and waits for the lazy chunk to render. */
+export async function openLab(page: Page): Promise<void> {
+  await page.goto('/lab?mode=digital');
+  await page.getByRole('heading', { name: 'PaperFault Lab' }).waitFor();
+}

@@ -44,3 +44,10 @@ ul, ol { padding-left: 1.25rem; margin: .25rem 0; }
 .hint { margin: .25rem 0 0 1.5rem; color: var(--cyan); }
 .timeline { max-height: 18rem; overflow: auto; }
 .tick { color: var(--orange); font-variant-numeric: tabular-nums; }
+@media (max-width: 30rem) {
+  .lab { padding: .5rem; }
+  .panel { padding: .75rem; }
+  .row > button { flex: 1 1 100%; }
+  .status-list { grid-template-columns: 1fr; }
+}
+select { max-width: 100%; }
