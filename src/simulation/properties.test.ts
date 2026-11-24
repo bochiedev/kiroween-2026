@@ -98,6 +98,24 @@ describe('fast-check properties (design, Testing)', () => {
     );
   });
 
+  it('P4b: each PERSIST_FAILED detail.attempts equals the order attempts before the event plus one', () => {
+    fc.assert(
+      fc.property(configArb, commandsArb, (config, commands) => {
+        const events = fold(commands, config).events;
+        let state = createState();
+        for (const event of events) {
+          if (event.type === 'PERSIST_FAILED' && event.orderId !== undefined) {
+            const before = Object.hasOwn(state.orders, event.orderId) ? state.orders[event.orderId].attempts : 0;
+            if (event.detail?.attempts !== before + 1) return false;
+          }
+          state = replayEvents([...events.slice(0, events.indexOf(event) + 1)]);
+        }
+        return true;
+      }),
+      { numRuns: 100 },
+    );
+  });
+
   it('P5: attempts never exceed maxAttempts', () => {
     fc.assert(
       fc.property(configArb, commandsArb, (config, commands) =>

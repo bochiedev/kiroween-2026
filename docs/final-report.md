@@ -4,7 +4,7 @@ Branch `web/implement-tasks`. Produced by the web agent on 2026-11-25. Node v22.
 
 ## Completed
 
-- **Core simulation** (`src/simulation/`): pure TypeScript engine with injected clock, idempotency by order id, bounded retries, replay. Tasks 1 to 8 of `core-simulation`.
+- **Core simulation** (`src/simulation/`): pure TypeScript engine with time advanced only by a `TICK` command (no injected clock), idempotency by order id, bounded retries, replay. Tasks 1 to 8 of `core-simulation`.
 - **Digital Lab** (`src/lab/`, `/lab?mode=digital`): works with no camera code. XYFlow diagram is lazy-loaded. Tasks 1 to 8 of `digital-lab`.
 - **Portal** (`src/landing/`): CSS/SVG landing page, **ENTER THE LAB** link, 1.2 s transition, reduced-motion fallback, 360 px layout.
 - **Camera cards** (`src/camera/`, `public/cards/`): `js-aruco2` adapter, debouncer, signal-to-command mapping, lazy `CameraPanel`, permission only after the **Start camera** click, fallbacks for denied, no device and unsupported, four printable SVG cards plus a print sheet.
@@ -28,8 +28,8 @@ All commands exited 0 on the final tree.
 | Command | Result |
 |---|---|
 | `npm run typecheck` | pass |
-| `npm run test:unit` | 19 files, 108 tests passed |
-| `npm run test:sim` | 7 files, 50 tests passed. Includes six fast-check properties (500 cases each, up to 80 commands, checked after every command) |
+| `npm run test:unit` | 19 files, 109 tests passed |
+| `npm run test:sim` | 7 files, 51 tests passed. Includes six fast-check properties (500 cases each, up to 80 commands, checked after every command) plus P4b (100 cases) |
 | `npm run build` | pass (`tsc --noEmit` then `vite build`) |
 | `npm run test:e2e` | 27 passed, about 13 s, Chromium only |
 | `sh scripts/kiro-post-task-check.sh` | ran typecheck, unit and sim tests, all passed (run by hand, not by a Kiro hook) |
@@ -88,7 +88,7 @@ Result: **server starts and answers; Kiro client connection not verified.**
 - Steering, skills, hooks, agents, MCP config files exist in `.kiro/`. None was activated by Kiro on this surface.
 - `judge-demo-qa` skill: not auto-activated. The agent read `.kiro/skills/judge-demo-qa/SKILL.md` and followed steps 1, 3 and 4 by hand (landing to lab to replay, keyboard, reduced motion, mobile, exact commands). Not a verified activation.
 - Hook scripts were run by hand and passed. The hooks did not fire.
-- Property-based testing with fast-check is real (six properties, plus two deliberate fault injections that made P5 and P6 fail, recorded in `docs/kiro-usage.md`).
+- Property-based testing with fast-check is real (six properties plus P4b, plus two deliberate fault injections that made P5 and P6 fail, recorded in `docs/kiro-usage.md`).
 
 ## Unverified items
 

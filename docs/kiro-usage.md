@@ -39,6 +39,8 @@ After implementation, turn evidence into a concise summary covering features act
 - Result of `npm run test:sim`: 7 test files, 50 tests passed (state 4, step.components 7, step.healthy 11, step.outage 7, step.recovery 6, replay 9, properties 6). Duration about 250 ms.
 - Properties P1 to P6 (design, Testing) each run 500 generated cases of up to 80 commands, with maxAttempts 1 to 5 and backoffTicks 0 to 4. Each property that has a per-step invariant is checked after every command, not just at the end. Order ids include `__proto__` and `constructor`.
 - fast-check found no counterexample against the final engine. No real engine bug was discovered by the properties, so there is no counterexample to record.
+- P4 caveat: `replayEvents` and `step` both use `applyEvent`, so P4 checks that state is rebuildable from the log, not that decisions are correct. P1, P2, P5 and P6 carry the integrity checks. P4b (added after review) checks that each `PERSIST_FAILED` event's `attempts` equals the order's prior attempts plus one. It was not fault-injected.
+- Review follow-ups: `CameraPanel` now stops a camera whose start resolves after unmount or stop, and ignores late signals. The camera e2e no longer uses a fixed sleep. `vercel.json` adds `Permissions-Policy: camera=(self)` and a CSP with `connect-src 'self'`; these headers are untested on a deployed site and the CSP was not checked against a deployed build. The start-during-unmount race has no automated test.
 - Sensitivity check (manual, deliberate, reverted, not committed): changing `attempts >= maxAttempts` to `>` made P5 fail with seed -1239051130, shrunk counterexample `maxAttempts 1, backoffTicks 0, [database down, submit a, 4x TICK]`. Disabling the parked-order requeue on database up made P6 fail with seed 701178456, shrunk counterexample `maxAttempts 1, backoffTicks 0, [database down, submit a, 2x TICK]`. These are injected faults, not product bugs. They show the properties can fail.
 - Kernel purity: `grep -rnE "Date\.now|Math\.random|setTimeout|setInterval|from 'react|document\.|window\." src/simulation` (non-test files) returned no matches.
 - Hook script output (abridged to the pass lines): `RUN: npm run typecheck`, `RUN: npm run test:unit` (50 passed), `RUN: npm run test:sim` (50 passed).
@@ -87,7 +89,7 @@ Branch `web/implement-tasks`. Produced by the web agent on 2026-11-25. Node v22.
 
 ## Completed
 
-- **Core simulation** (`src/simulation/`): pure TypeScript engine with injected clock, idempotency by order id, bounded retries, replay. Tasks 1 to 8 of `core-simulation`.
+- **Core simulation** (`src/simulation/`): pure TypeScript engine with time advanced only by a `TICK` command (no injected clock), idempotency by order id, bounded retries, replay. Tasks 1 to 8 of `core-simulation`.
 - **Digital Lab** (`src/lab/`, `/lab?mode=digital`): works with no camera code. XYFlow diagram is lazy-loaded. Tasks 1 to 8 of `digital-lab`.
 - **Portal** (`src/landing/`): CSS/SVG landing page, **ENTER THE LAB** link, 1.2 s transition, reduced-motion fallback, 360 px layout.
 - **Camera cards** (`src/camera/`, `public/cards/`): `js-aruco2` adapter, debouncer, signal-to-command mapping, lazy `CameraPanel`, permission only after the **Start camera** click, fallbacks for denied, no device and unsupported, four printable SVG cards plus a print sheet.
@@ -111,8 +113,8 @@ All commands exited 0 on the final tree.
 | Command | Result |
 |---|---|
 | `npm run typecheck` | pass |
-| `npm run test:unit` | 19 files, 108 tests passed |
-| `npm run test:sim` | 7 files, 50 tests passed. Includes six fast-check properties (500 cases each, up to 80 commands, checked after every command) |
+| `npm run test:unit` | 19 files, 109 tests passed |
+| `npm run test:sim` | 7 files, 51 tests passed. Includes six fast-check properties (500 cases each, up to 80 commands, checked after every command) plus P4b (100 cases) |
 | `npm run build` | pass (`tsc --noEmit` then `vite build`) |
 | `npm run test:e2e` | 27 passed, about 13 s, Chromium only |
 | `sh scripts/kiro-post-task-check.sh` | ran typecheck, unit and sim tests, all passed (run by hand, not by a Kiro hook) |
@@ -171,7 +173,7 @@ Result: **server starts and answers; Kiro client connection not verified.**
 - Steering, skills, hooks, agents, MCP config files exist in `.kiro/`. None was activated by Kiro on this surface.
 - `judge-demo-qa` skill: not auto-activated. The agent read `.kiro/skills/judge-demo-qa/SKILL.md` and followed steps 1, 3 and 4 by hand (landing to lab to replay, keyboard, reduced motion, mobile, exact commands). Not a verified activation.
 - Hook scripts were run by hand and passed. The hooks did not fire.
-- Property-based testing with fast-check is real (six properties, plus two deliberate fault injections that made P5 and P6 fail, recorded in `docs/kiro-usage.md`).
+- Property-based testing with fast-check is real (six properties plus P4b, plus two deliberate fault injections that made P5 and P6 fail, recorded in `docs/kiro-usage.md`).
 
 ## Unverified items
 

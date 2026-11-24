@@ -17,9 +17,22 @@ export default function CameraPanel({ onCommand }: { onCommand: (command: Comman
   const onCommandRef = useRef(onCommand);
   onCommandRef.current = onCommand;
 
-  useEffect(() => () => sessionRef.current?.stop(), []);
+  const aliveRef = useRef(true);
+  // Bumped on every start and stop. A start that resolves under an older id is torn down.
+  const startIdRef = useRef(0);
+
+  useEffect(() => {
+    aliveRef.current = true;
+    return () => {
+      aliveRef.current = false;
+      startIdRef.current += 1;
+      sessionRef.current?.stop();
+      sessionRef.current = null;
+    };
+  }, []);
 
   const stop = () => {
+    startIdRef.current += 1;
     sessionRef.current?.stop();
     sessionRef.current = null;
     setStatus({ kind: 'idle' });
@@ -27,19 +40,28 @@ export default function CameraPanel({ onCommand }: { onCommand: (command: Comman
 
   const start = async () => {
     if (!videoRef.current) return;
+    const id = ++startIdRef.current;
+    const current = () => aliveRef.current && startIdRef.current === id;
     setStatus({ kind: 'starting' });
     try {
       const { startCamera } = await import('./adapter');
       const map = createSignalMapper();
-      sessionRef.current = await startCamera({
+      const session = await startCamera({
         video: videoRef.current,
         onSignal: (signal) => {
+          if (!current()) return;
           const command = map(signal);
           if (command) onCommandRef.current(command);
         },
       });
+      if (!current()) {
+        session.stop();
+        return;
+      }
+      sessionRef.current = session;
       setStatus({ kind: 'running' });
     } catch (err) {
+      if (!current()) return;
       setStatus({ kind: 'failed', failure: err instanceof CameraError ? err.kind : 'error' });
     }
   };
@@ -49,8 +71,8 @@ export default function CameraPanel({ onCommand }: { onCommand: (command: Comman
       <h2 id="camera-h">Physical mode (camera cards)</h2>
       <p className="note">Implemented, not hardware-verified.</p>
       <p>
-        Print the <a href="/cards/index.html">four marker cards</a>, then start the camera. Remove a card from view to take that
-        component down. Video stays in your browser and is never stored or uploaded.
+        Print the <a href="/cards/index.html">four marker cards</a>, then start the camera. Once a card has been seen, removing it from view takes
+        that component down. Video stays in your browser and is never stored or uploaded.
       </p>
       <div className="row">
         {status.kind === 'running' ? (

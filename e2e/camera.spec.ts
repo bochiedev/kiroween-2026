@@ -135,7 +135,6 @@ test('synthetic camera: removing a card takes its component down, restoring it b
   let current = [0, 1, 2, 3];
   try {
     await draw(current);
-    await page.waitForTimeout(500);
     for (const id of ['api', 'queue', 'worker', 'database']) await expect(page.getByTestId(`status-${id}`)).toContainText('UP');
     current = [0, 1, 3];
     await expect(page.getByTestId('status-worker')).toContainText('DOWN', { timeout: 8000 });

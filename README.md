@@ -34,7 +34,7 @@ Full evidence: [`docs/final-report.md`](docs/final-report.md) and [`docs/kiro-us
 
 ## Stack
 
-Vite, React, TypeScript, XYFlow (React Flow), `js-aruco2` (lazy-loaded, physical mode only), Vitest, fast-check and Playwright with `@axe-core/playwright`. The simulator is pure TypeScript with an injected clock and event stream, so UI state always reflects real simulator state.
+Vite, React, TypeScript, XYFlow (React Flow), `js-aruco2` (lazy-loaded, physical mode only), Vitest, fast-check and Playwright with `@axe-core/playwright`. The simulator is pure TypeScript with time advanced only by a `TICK` command and a single event stream. In the Digital Lab the UI shows simulator state. In physical mode a component stays UP until its card has been seen and then removed.
 
 ## Repository layout
 
