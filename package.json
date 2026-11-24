@@ -8,8 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test:unit": "vitest run --passWithNoTests",
-    "test:sim": "vitest run src/simulation --passWithNoTests"
+    "test:unit": "vitest run",
+    "test:sim": "vitest run src/simulation"
   },
   "dependencies": {
     "react": "^19.3.1",
